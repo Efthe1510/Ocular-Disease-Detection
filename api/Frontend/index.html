@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ocular Disease Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #bae5e5;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #0a1c4a;
+    }
+    input[type="file"] {
+      margin: 20px;
+    }
+    img {
+      max-width: 300px;
+      margin-top: 20px;
+      display: none;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 16px;
+      background-color: #3a3230;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #62478e;
+    }
+    #result {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Ocular Disease Detection </h1>
+  
+  <input type="file" id="imageInput" accept="image/*"><br>
+  <img style="margin: 0 auto;" id="preview" src="#" alt="Preview"><br>
+  <button onclick="predict()">Predict</button>
+
+  <div id="result"></div>
+
+  <script>
+    const imageInput = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+    const result = document.getElementById("result");
+
+    imageInput.addEventListener("change", () => {
+      const file = imageInput.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+        result.innerText = "";
+      }
+    });
+
+    async function predict() {
+      const file = imageInput.files[0];
+      if (!file) {
+        alert("Please select an image first.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      result.innerText = "Predicting...";
+
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to get a valid response");
+        }
+
+        const data = await response.json();
+        result.innerText = `🧪 Predicted Class: ${data.class}\n🎯 Confidence: ${(data.confidence * 100).toFixed(2)}%`;
+
+      } catch (error) {
+        result.innerText = "❌ Error during prediction.";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
